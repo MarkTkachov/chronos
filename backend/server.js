@@ -3,8 +3,8 @@ const express = require('express');
 const cron = require('node-cron');
 const cookieParser = require('cookie-parser');
 const app = express();
-const hostname = '127.0.0.1';
-const port = 1109;
+const hostname = process.env.URL;
+const port = process.env.PORT || 3001;
 const mongoose = require('mongoose');
 require('./config/database');
 const User = require('./models/User');
@@ -96,6 +96,6 @@ cron.schedule('0 0 * * 0', async () => {
 });
 
 
-app.listen(port, hostname, () => {
+app.listen(port, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });
