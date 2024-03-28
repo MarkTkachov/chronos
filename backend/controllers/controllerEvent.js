@@ -92,7 +92,6 @@ const controllerEvent = {
       });
         
       await newEvent.save();
-      console.log(newEvent);
       if (calendar.isDefault) {
         calendar.events.push(newEvent._id);
         await calendar.save();
@@ -108,6 +107,15 @@ const controllerEvent = {
           }, res);
           return;
         } catch(error) {
+          if (calendar.isDefault) {
+            const index = calendar.events.indexOf(newEvent._id);
+            if (index !== -1) {
+              calendar.events.splice(index, 1);
+              await calendar.save(); 
+            }
+          }
+    
+          await Event.findByIdAndDelete(newEvent._id);
           return;
         }
       }

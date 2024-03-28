@@ -43,7 +43,7 @@ async function addParticipantsAndSendInvites(emailsToAdd, event) {
 const shareEventWithParticipants = async (req, res) => {
   try {
     const { eventId } = req.params;
-    const { emails } = req.body; 
+    let { emails } = req.body; 
     const userId = req.userId; 
 
     if (!validateParticipantsArray(emails, res)) return;
