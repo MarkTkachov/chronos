@@ -139,8 +139,8 @@ export const fetchEventsFromCalendarById = createAppAsyncThunk('calendars/fetchE
 
 export const fetchHolidays = createAppAsyncThunk('calendar/fetchHolidays',
     async (payload: undefined, thunkApi) => {
-        const locResp = await axios.get(`http://ip-api.com/json/`, { withCredentials: false });
-        const countryCode: string = locResp.data.countryCode;
+        const locResp = await axios.get(`https://ipapi.co/json/`, { withCredentials: false });
+        const countryCode: string = locResp.data.country_code;
         const currentYear = new Date().getFullYear();
         const fetchesArray: Promise<AxiosResponse>[] = [
             axios.get(`https://date.nager.at/api/v3/PublicHolidays/${currentYear - 1}/${countryCode}`, { withCredentials: false }),

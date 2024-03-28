@@ -1,6 +1,7 @@
 const Calendar = require('../models/Calendar');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const mongoose = require('mongoose');
 const { sendError, sendSuccess } = require('../utils/error/responseHelpers');
 const generateNewUrlForCalendar = require('../utils/ical/generateNewUrlForCalendar');
 const sendEmail = require('../utils/email/sendEmail');
@@ -144,10 +145,14 @@ const controllerCalendar = {
       const deleteForAll = req.query.deleteForAll === 'true';
 
       const user = await validateUserPermissions(userId, res);
-        if (!user) return;
+      if (!user) return;
 
-      const calendar = await validateCalendarExists(calendarId, userId, res);
-        if (!calendar) return;
+      if (!mongoose.Types.ObjectId.isValid(calendarId)) 
+        return sendError(res, 400, 'Invalid calendar ID.');
+  
+      const calendar = await Calendar.findById(calendarId);
+      if (!calendar) 
+        return sendError(res, 404, 'Calendar not found.');
 
       if (calendar.isDefault) return sendError(res, 403, 'Default calendar cannot be deleted.');
 
@@ -180,11 +185,8 @@ const controllerCalendar = {
 
       await sendEmail(calendar.creator.email, 'calendarNotification', '', calendar.title, email, calendar.title);
 
-      const userExists = await User.findOne({ email: email });
-      let redirectUrl;
-      if (userExists) redirectUrl = 'login';
-      else redirectUrl = 'register';
-      res.redirect(`${process.env.FRONTEND_URL}/${redirectUrl}`);
+      await User.findOne({ email: email });
+      res.redirect(`${process.env.FRONTEND_URL}/login`);
     } catch(error) {
       sendError(res, 500, 'Error accepted calendar.', error.toString());
     }

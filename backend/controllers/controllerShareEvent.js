@@ -5,6 +5,7 @@ const sendEmail = require('../utils/email/sendEmail');
 const validateEvent = require('../utils/validate/event/validateEvent');
 const validateUserPermissions = require('../utils/validate/event/validateUserPermissions');
 const validateParticipantsArray = require('../utils/validate/calendar/validateParticipantsArray');
+const isValidEmail = require('../utils/regexEmail');
 
 async function filterEmails(emails, event, calendar, authorEmail) {
   const calendarParticipantEmails = calendar.participants.map(participant => participant.emailParticipant);
@@ -47,6 +48,8 @@ const shareEventWithParticipants = async (req, res) => {
 
     if (!validateParticipantsArray(emails, res)) return;
 
+    emails = emails.filter(isValidEmail);
+ 
     const user = await User.findById(userId);
 
     const event = await validateEvent(eventId, res);
@@ -63,7 +66,7 @@ const shareEventWithParticipants = async (req, res) => {
       event.participants.push(...newParticipants);
       await event.save();
       newParticipants.forEach(participant => {
-        sendEmail(participant.emailParticipant, 'eventAccess', '', '', event.creator.email, event.title);
+        sendEmail(participant.emailParticipant, 'eventAccess', '', '', user.email, event.title);
       });
       sendSuccess(res, 'Event shared successfully with new participants.');
     } else 

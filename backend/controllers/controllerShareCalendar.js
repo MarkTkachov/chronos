@@ -1,10 +1,11 @@
 const User = require('../models/User');
+const Event = require('../models/Event');
 const { sendError, sendSuccess } = require('../utils/error/responseHelpers');
 const sendEmail = require('../utils/email/sendEmail');
 const generateToken = require('../utils/tokens/generateToken');
 const validateParticipantsArray = require('../utils/validate/calendar/validateParticipantsArray');
 const getCalendarAndValidatePermissions = require('../utils/validate/calendar/getCalendarAndValidatePermissions');
-
+const isValidEmail = require('../utils/regexEmail');
 
 async function removeUserFromEventParticipants(user, calendarId) {
   const events = await Event.find({
@@ -13,19 +14,23 @@ async function removeUserFromEventParticipants(user, calendarId) {
   });
 
   for (const event of events) {
-    event.participants = event.participants.filter(participant => !participant.userId.equals(user._id));
+    event.participants = event.participants.filter(participant =>
+      participant && participant.userId && participant.userId.equals(user._id) ? false : true
+    );
     await event.save();
   }
 }
 
 async function processParticipants(participantsArray, calendar) {
   for (const {email, role = 'viewer'} of participantsArray) {
-    if (!email) continue;
+    if (!email || !isValidEmail(email)) continue;
     const user = await User.findOne({ email });
-
-    let participantIndex = calendar.participants.findIndex(participant => 
-      user ? participant.userId.equals(user._id) : participant.emailParticipant === email
-    );
+    let participantIndex = calendar.participants.findIndex(participant => {
+      if (user && participant.userId && participant.userId.equals) 
+        return participant.userId.equals(user._id);
+      else
+        return participant.emailParticipant === email;
+    });
 
     await processIndividualParticipant(participantIndex, calendar, email, role, user);
   }

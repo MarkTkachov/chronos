@@ -9,6 +9,7 @@ const generateTokensAndSetCookies = require('../utils/tokens/tokenUtils');
 const generateToken = require('../utils/tokens/generateToken');
 const generateAccessTokensAndSetCookie = require('../utils/tokens/createAccessToken');
 const { sendError, sendSuccess } = require('../utils/error/responseHelpers');
+const isValidEmail = require('../utils/regexEmail');
 
 const controllerAuthentication = {
   async register(req, res) {
@@ -17,6 +18,8 @@ const controllerAuthentication = {
   
       if (await User.findOne({ $or: [{ login }, { email }] })) 
         return sendError(res, 400, 'A user with that login or email already exists.');
+      
+      if (!isValidEmail(email)) return sendError(res, 400, 'Invalid email format.');
 
       const hashPassword = await bcrypt.hash(password, 10);
       const newUser = new User({
@@ -111,7 +114,9 @@ const controllerAuthentication = {
     try {
       const {loginOrEmail, password} = req.body;
       if (!loginOrEmail || !password) return sendError(res, 400, 'Please enter all fields.');
-      
+
+      if (loginOrEmail.includes('@') && !isValidEmail(loginOrEmail))
+        return sendError(res, 400, 'Invalid email format.');
 
       const user = await User.findOne({
         $or: [{email: loginOrEmail}, {login: loginOrEmail}]
@@ -139,6 +144,9 @@ const controllerAuthentication = {
     try {
       const {email} = req.body;
       if (!email) return sendError(res, 400, 'Email field is required.');
+
+      if (!isValidEmail(email)) 
+        return sendError(res, 400, 'Invalid email format.');
 
       const user = await User.findOne({ email });
 

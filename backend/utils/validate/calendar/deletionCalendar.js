@@ -1,6 +1,7 @@
 const Calendar = require('../../../models/Calendar');
 const Event = require('../../../models/Event');
 const User = require('../../../models/User');
+const mongoose = require('mongoose');
 const { sendError, sendSuccess } = require('../../error/responseHelpers');
 
 
@@ -24,11 +25,12 @@ async function hideCalendarForCreator(calendarId, userId, res) {
 }
 
 async function deleteCalendarForParticipant(calendarId, userId, res) {
-  const isParticipant = (await Calendar.findById(calendarId)).participants.some(participant => participant.userId.equals(userId));
+  const isParticipant = (await Calendar.findById(calendarId)).participants.some(participant => 
+    participant.userId && participant.userId.equals(userId));
   if (!isParticipant) 
     return sendError(res, 403, 'You are not a participant of this calendar.');
   
-  const result = await Calendar.updateOne({ _id: calendarId }, { $pull: { participants: { userId } } });
+  const result = await Calendar.updateOne({ _id: calendarId }, { $pull: { participants: {userId: mongoose.Types.ObjectId(userId) } } });
   if (result.nModified > 0) 
     return sendSuccess(res, 'You have been removed from the calendar.');
   else 
@@ -39,7 +41,7 @@ async function handleCalendarDeletion(calendarId, userId, deleteForAll, res) {
   const calendar = await Calendar.findById(calendarId);
   if (!calendar) return sendError(res, 404, 'Calendar not found.');
 
-  if (calendar.creator.equals(userId)) {
+  if (calendar.creator && calendar.creator.equals(userId)) {
     if (deleteForAll || (!deleteForAll && calendar.participants.length === 0)) 
       return await deleteCalendarForCreator(calendarId, res);
     else 

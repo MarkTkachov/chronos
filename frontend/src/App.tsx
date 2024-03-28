@@ -1,5 +1,5 @@
 import { Provider } from "react-redux";
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { Navigate, RouterProvider, createBrowserRouter } from "react-router-dom";
 import LoginPage from "./components/auth/LoginPage";
 import { RestorePasswordPage } from "./components/auth/RestorePasswordPage";
 import { HomePage } from "./components/calendar/HomePage";
@@ -19,7 +19,11 @@ const router = createBrowserRouter([
     {
         path: '/',
         element: <LoginRequire><HomePage /></LoginRequire> ,
-    }
+    },
+    {
+        path: '/*',
+        element: <Navigate to={'/'} /> ,
+    },
 ])
 
 function App() {

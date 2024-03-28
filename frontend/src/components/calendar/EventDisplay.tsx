@@ -44,7 +44,10 @@ export const EventDisplay: FC<{
             content: <EditEventForm
                 event={eventObj}
                 refreshEvents={eventsRefetch}
-                closeHandle={() => modalHandle.close()}
+                closeHandle={() => {
+                    closeHandle();
+                    modalHandle.close();
+                }}
             />,
             closeOnMaskClick: true,
             showCloseButton: true
@@ -55,7 +58,9 @@ export const EventDisplay: FC<{
         const modalHandle = Modal.show({
             content: <ShareEventForm
                 id={eventObj.id}
-                closeHandle={() => modalHandle.close()}
+                closeHandle={() => {
+                    modalHandle.close();
+                }}
             />,
             closeOnMaskClick: true,
             showCloseButton: true

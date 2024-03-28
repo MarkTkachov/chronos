@@ -92,6 +92,11 @@ const controllerEvent = {
       });
         
       await newEvent.save();
+      console.log(newEvent);
+      if (calendar.isDefault) {
+        calendar.events.push(newEvent._id);
+        await calendar.save();
+      }
       // calendar.events.push(newEvent._id); 
       // await calendar.save();
       if (calendar.creator.equals(userId) && participants && Array.isArray(participants) && participants.length > 0) {
@@ -142,10 +147,7 @@ const controllerEvent = {
       if (!isCreator && !isEditor) 
         return sendError(res, 403, 'Only the creator of the calendar or an editor can edit events.');
 
-
-      if (isEditor && participants) 
-        return sendError(res, 403, 'Only the creator of the calendar can edit participants.');
-
+        
       event.title = title ?? event.title;
       event.startDateTime = startDateTime ?? event.startDateTime;
       event.endDateTime = endDateTime ?? event.endDateTime;
